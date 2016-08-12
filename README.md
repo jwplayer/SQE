@@ -7,4 +7,4 @@ SQE is a query engine written using Storm's Trident framework that takes a set o
 
 There are two external jars included in the repo, both forks of Storm external projects. The forked code can be found here: https://github.com/jwplayer/storm/tree/1.x-redis-hash
 
-https://github.com/jwplayer/sqe-internal/wiki
+https://github.com/jwplayer/sqe/wiki
