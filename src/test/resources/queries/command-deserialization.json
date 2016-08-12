@@ -1,0 +1,71 @@
+[
+  {
+    "Set": {
+      "key": "jw.sqe.state.redis.host",
+      "value": "localhost"
+    }
+  },
+  {
+    "CreateStream": {
+      "streamName": "big.query.data",
+      "objectName": "ping-logs",
+      "spoutName": "FIXED",
+      "spoutType": "NON_TRANSACTIONAL",
+      "options": {
+        "jw.sqe.spout.fixed.fields": ["DateString", "AccountToken", "UserName", "HappyDanceCount"],
+        "jw.sqe.spout.fixed.values": [
+          ["2015-05-01 00:00", "Account1", "Joe", 1],
+          ["2015-05-01 01:00", "Account1", "Bob", -1],
+          ["2015-05-01 02:00", "Account1", "Susy", 1],
+          ["2015-05-01 03:00", "Account1", "Mr. Fancy Pants", 1],
+          ["2015-05-01 04:00", "Account1", "Joe", -1],
+          ["2015-05-01 05:00", "Account1", "Bob", 1],
+          ["2015-05-01 06:00", "Account1", "Susy", 1],
+          ["2015-05-01 07:00", "Account1", "Mr. Fancy Pants", 1],
+          ["2015-05-01 08:00", "Account2", "Joe", 1],
+          ["2015-05-01 09:00", "Account2", "Bob", 1],
+          ["2015-05-01 10:00", "Account2", "Susy", -1],
+          ["2015-05-01 11:00", "Account2", "Mr. Fancy Pants", 1],
+          ["2015-05-01 12:00", "Account2", "Joe", 1],
+          ["2015-05-01 13:00", "Account2", "Bob", 1],
+          ["2015-05-01 14:00", "Account2", "Susy", 1],
+          ["2015-05-01 15:00", "Account2", "Mr. Fancy Pants", -1]
+        ]
+      }
+    }
+  },
+  {
+    "Query": {
+      "insertInto":{
+        "objectName":"TestComplexQuery",
+        "stateName": "REDIS",
+        "stateType": "TRANSACTIONAL",
+        "fields":["DateString", "AccountToken", "UserHllBitmap", "HappyDanceCount"],
+        "options": {
+          "jw.sqe.state.redis.datatype": "HASH",
+          "jw.sqe.state.redis.keyname.fields": ["DateString"],
+          "jw.sqe.state.redis.fieldname.fields": ["AccountToken"]
+        }
+      },
+      "select":{
+        "expressions":[
+          {"FormatDate":[{"ParseDate":["DateString",{"C":"yyyy-MM-dd HH:mm"}]},{"C":"yyyy-MM-dd"}]},
+          "AccountToken",
+          {"CreateHll":["UserName"]},{"Sum":["HappyDanceCount"]}
+        ]
+      },
+      "from":{"objectName":"big.query.data"},
+      "where":
+      {"And":[
+        {"In":["UserName",{"C":"Bob"},{"C":"Susy"},{"C":"Mr. Fancy Pants"}]},
+        {"Or":[{">":["HappyDanceCount",0.0]},false]}
+      ]}
+    }
+  },
+  {
+    "Set": {
+      "key": "a",
+      "value": "b"
+    }
+  }
+]

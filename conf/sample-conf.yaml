@@ -1,0 +1,8 @@
+Storm:
+    topology.workers: 1
+
+SQE:
+    jw.sqe.parallelism.hint: 1
+    jw.sqe.state.redis.database: 1
+    jw.sqe.spout.kafka.bufferSizeBytes: 65536 # This is less than the default for testing purposes
+    jw.sqe.spout.kafka.fetchSizeBytes: 65536 # This is less than the default for testing purposes

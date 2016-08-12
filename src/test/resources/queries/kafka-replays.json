@@ -1,0 +1,51 @@
+[
+  {
+    "CreateStream": {
+      "streamName": "Source",
+      "objectName": "source",
+      "spoutName": "KAFKA",
+      "spoutType": "OPAQUE",
+      "deserializer": "identity",
+      "options": {
+        "jw.sqe.spout.kafka.clientid": "test-abcd",
+        "jw.sqe.spout.kafka.filterReplays": true,
+        "jw.sqe.spout.kafka.zkhosts": ["%s"]
+      }
+    }
+  },
+  {
+    "Query": {
+      "insertInto":{
+        "objectName":"middle",
+        "fields":["Message"]
+      },
+      "select":{
+        "expressions":[
+          "_value"
+        ]
+      },
+      "from":{"objectName":"Source"}
+    }
+  },
+  {
+    "Query": {
+      "insertInto":{
+        "objectName":"dest",
+        "stateName": "KAFKA",
+        "stateType": "NON_TRANSACTIONAL",
+        "fields":["Message"],
+        "options": {
+          "jw.sqe.state.kafka.keytype": "StreamMetadata",
+          "jw.sqe.state.kafka.partitionClass": "com.jwplayer.sqe.language.state.kafka.SourcePartitionPartitioner",
+          "jw.sqe.state.kafka.brokers": ["%s"]
+        }
+      },
+      "select":{
+        "expressions":[
+          "Message"
+        ]
+      },
+      "from":{"objectName":"middle"}
+    }
+  }
+]
